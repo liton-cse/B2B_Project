@@ -4,6 +4,9 @@ import { UserRoutes } from '../app/modules/user/user.route';
 import { ProductAndcatelogRoutes } from '../app/modules/product.catelog/product.route';
 import { BannerRoutes } from '../app/modules/banar/banar.route';
 import { revieweRouter } from '../app/modules/review/review.routes';
+import { FavouriteRoutes } from '../app/modules/favourite/favourite.routes';
+import { InvoiceRoutes } from '../app/modules/Invoice/invoice.routes';
+import { PaymentRoutes } from '../app/modules/payments/payments.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -26,6 +29,18 @@ const apiRoutes = [
   {
     path: '/banar',
     route: BannerRoutes,
+  },
+  {
+    path: '/favourite',
+    route: FavouriteRoutes,
+  },
+  {
+    path: '/invoice',
+    route: InvoiceRoutes,
+  },
+  {
+    path: '/online-payment',
+    route: PaymentRoutes,
   },
 ];
 

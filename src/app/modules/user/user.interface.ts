@@ -1,6 +1,11 @@
 import { Model } from 'mongoose';
 import { USER_ROLES } from '../../../enums/user';
-
+export interface IQueryOptions {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
 export type IUser = {
   name: string;
   businessType: string;
@@ -10,9 +15,11 @@ export type IUser = {
   email: string;
   password: string;
   fcmToken: string;
-  address: string;
+  businessAddress: string;
   image?: string;
-  status: 'active' | 'inActive' | 'delete';
+  status: 'pending' | 'approve' | 'reject' | 'block' | 'unblock';
+  customerType: string;
+  isActive: 'active' | 'inActive';
   verified: boolean;
   authentication?: {
     isResetPassword: boolean;

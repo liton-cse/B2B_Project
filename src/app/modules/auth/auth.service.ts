@@ -34,11 +34,26 @@ const loginUserFromDB = async (payload: ILoginData) => {
     );
   }
 
-  //check user status
-  if (isExistUser.status === 'delete') {
+  // check user status
+  if (isExistUser.status === 'pending') {
     throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'You don’t have permission to access this content.It looks like your account has been deactivated.'
+      StatusCodes.FORBIDDEN,
+      'Your account is currently pending approval. You do not have access to this content yet. Please wait for administrator approval. You will receive an email notification once your account is approved.'
+    );
+  }
+
+  // check user status
+  if (isExistUser.status === 'block') {
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      'Your account has been blocked and access to this content is restricted. Please contact support or your administrator for further assistance.'
+    );
+  }
+
+  if (isExistUser.status === 'reject') {
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      'Your account registration has been rejected and access to this content is not permitted. Please contact support or the administrator if you believe this decision was made in error.'
     );
   }
 

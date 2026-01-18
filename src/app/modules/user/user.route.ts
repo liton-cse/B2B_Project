@@ -22,6 +22,8 @@ router
       return UserController.updateProfile(req, res, next);
     }
   );
+  
+router.get('/', auth(USER_ROLES.ADMIN), UserController.getAllUsers);
 
 router
   .route('/')
@@ -29,5 +31,14 @@ router
     validateRequest(UserValidation.createUserZodSchema),
     UserController.createUser
   );
+/**
+ * Update user status & customer type
+ * PATCH /api/v1/users/:id/status
+ */
+router.patch(
+  '/:userId/status',
+  auth(USER_ROLES.ADMIN),
+  UserController.updateUserStatusAndCustomerType
+);
 
 export const UserRoutes = router;

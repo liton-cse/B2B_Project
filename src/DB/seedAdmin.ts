@@ -10,9 +10,10 @@ const payload = {
   password: config.super_admin.password,
   verified: true,
   contact: config.super_admin_info.contact,
-  address: config.super_admin_info.address,
+  businessAddress: config.super_admin_info.address,
   businessType: '',
   businessName: '',
+  status: 'approve',
 };
 
 export const seedSuperAdmin = async () => {

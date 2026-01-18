@@ -33,7 +33,7 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: true,
     },
-    address: {
+    businessAddress: {
       type: String,
       required: true,
     },
@@ -49,7 +49,18 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     status: {
       type: String,
-      enum: ['active', 'inActive', 'delete'],
+      enum: ['pending', 'approve', 'reject', 'block', 'unblock'],
+      default: 'pending',
+    },
+    customerType: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      default: 'base customer',
+    },
+    isActive: {
+      type: String,
+      enum: ['active', 'inActive'],
       default: 'active',
     },
     fcmToken: {

@@ -9,7 +9,7 @@ const createUserZodSchema = z.object({
       .min(1, { message: 'Email is required' })
       .refine(val => /^\S+@\S+\.\S+$/.test(val), { message: 'Invalid email' }),
     password: z.string().min(8, { message: 'Password is required' }),
-    address: z.string().min(1, { message: 'Location is required' }),
+    businessAddress: z.string().min(1, { message: 'Location is required' }),
     profile: z.string().optional(),
   }),
 });

@@ -51,5 +51,43 @@ const updateProfile = catchAsync(
     });
   }
 );
+// update the user status and customer type.
 
-export const UserController = { createUser, getUserProfile, updateProfile };
+const updateUserStatusAndCustomerType = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId;
+    const { status, customerType } = req.body;
+    const result = await UserService.updateUserProfileStatusToDB(
+      userId,
+      status,
+      customerType
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'User updated successfully',
+      data: result,
+    });
+  }
+);
+
+//get all user.
+
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const users = await UserService.getAllUsersFromDB(req.query);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Users retrieved successfully',
+    data: users,
+  });
+});
+
+export const UserController = {
+  createUser,
+  getUserProfile,
+  getAllUsers,
+  updateProfile,
+  updateUserStatusAndCustomerType,
+};

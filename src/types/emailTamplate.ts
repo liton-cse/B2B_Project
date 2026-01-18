@@ -8,3 +8,8 @@ export type IResetPassword = {
   email: string;
   otp: number;
 };
+
+export type IAdminApprovalEmail = {
+  email: string;
+  title: string;
+};
