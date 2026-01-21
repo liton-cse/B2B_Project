@@ -9,11 +9,8 @@ import { getSingleFilePath } from '../../../shared/getFilePath';
  * Create product
  */
 const createProduct = catchAsync(async (req: Request, res: Response) => {
-  const image = getSingleFilePath(req.files, 'image');
-  const payload = {
-    ...req.body,
-    image,
-  };
+  const image = getSingleFilePath(req.files,"image");
+  const payload = { ...req.body, image };
   const result = await ProductService.createProductToDB(payload);
 
   sendResponse(res, {
@@ -25,10 +22,15 @@ const createProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
- * Get all products (search, filter, pagination)
+ * Get all products (with search)
+ * Query: ?searchTerm=rice
  */
 const getAllProducts = catchAsync(async (req: Request, res: Response) => {
-  const result = await ProductService.getAllProductsFromDB(req.query);
+  const { search ,category} = req.query;
+
+  const result = await ProductService.getAllProductsFromDB(
+    { search: search as string, category: category as string }
+  );
 
   sendResponse(res, {
     success: true,
@@ -39,11 +41,12 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
- * Get product by ID
+ * Get single product
  */
-const getProductById = catchAsync(async (req: Request, res: Response) => {
+const getSingleProduct = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await ProductService.getProductByIdFromDB(id);
+
+  const result = await ProductService.getSingleProductFromDB(id);
 
   sendResponse(res, {
     success: true,
@@ -58,11 +61,8 @@ const getProductById = catchAsync(async (req: Request, res: Response) => {
  */
 const updateProduct = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const image = getSingleFilePath(req.files, 'image');
-  const payload = {
-    ...req.body,
-    image,
-  };
+  const image = getSingleFilePath(req.files,"image");
+  const payload = { ...req.body, image };
   const result = await ProductService.updateProductToDB(id, payload);
 
   sendResponse(res, {
@@ -78,6 +78,7 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
  */
 const deleteProduct = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
+
   const result = await ProductService.deleteProductFromDB(id);
 
   sendResponse(res, {
@@ -91,7 +92,7 @@ const deleteProduct = catchAsync(async (req: Request, res: Response) => {
 export const ProductController = {
   createProduct,
   getAllProducts,
-  getProductById,
+  getSingleProduct,
   updateProduct,
   deleteProduct,
 };

@@ -7,6 +7,7 @@ import { revieweRouter } from '../app/modules/review/review.routes';
 import { FavouriteRoutes } from '../app/modules/favourite/favourite.routes';
 import { InvoiceRoutes } from '../app/modules/Invoice/invoice.routes';
 import { PaymentRoutes } from '../app/modules/payments/payments.routes';
+import { CustomerTypeRoutes } from '../app/modules/customer.type/customerr.type.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -17,6 +18,10 @@ const apiRoutes = [
   {
     path: '/auth',
     route: AuthRoutes,
+  },
+  {
+    path: '/customer-type',
+    route: CustomerTypeRoutes,
   },
   {
     path: '/product&catelog',

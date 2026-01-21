@@ -1,8 +1,29 @@
-import { Schema, model } from 'mongoose';
-import { IProduct } from './product.interface';
+import { Schema, model, Document } from 'mongoose';
+import { IProduct, ICustomerTypePrice } from './product.interface';
+
 
 /**
- * Product Schema
+ * Sub-schema for customer type price
+ */
+const customerTypePriceSchema = new Schema<ICustomerTypePrice>(
+  {
+    categoryName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    price: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    _id: false, // prevents auto _id for sub-documents
+  }
+);
+
+/**
+ * Product schema
  */
 const productSchema = new Schema<IProduct>(
   {
@@ -14,6 +35,7 @@ const productSchema = new Schema<IProduct>(
     description: {
       type: String,
       required: true,
+      trim: true,
     },
     category: {
       type: String,
@@ -24,23 +46,23 @@ const productSchema = new Schema<IProduct>(
       type: String,
       required: true,
     },
-    mainPrice: {
+    basePrice: {
       type: Number,
       required: true,
+      min: 0,
     },
-    sellingPrice: {
-      type: Number,
+    customerTypePrice: {
+      type: [customerTypePriceSchema],
+      default: [],
+    },
+    image: {
+      type: String,
       required: true,
     },
     stock: {
       type: Number,
       required: true,
       min: 0,
-      default: 0,
-    },
-
-    image: {
-      type: String,
     },
   },
   {
@@ -48,4 +70,7 @@ const productSchema = new Schema<IProduct>(
   }
 );
 
-export const Product = model<IProduct>('Product&Catelog', productSchema);
+export const ProductModel = model<IProduct>(
+  'ProductAndCatelog',
+  productSchema
+);
