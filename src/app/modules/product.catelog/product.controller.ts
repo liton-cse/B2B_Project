@@ -9,8 +9,17 @@ import { getSingleFilePath } from '../../../shared/getFilePath';
  * Create product
  */
 const createProduct = catchAsync(async (req: Request, res: Response) => {
-  const image = getSingleFilePath(req.files,"image");
-  const payload = { ...req.body, image };
+  const image = getSingleFilePath(req.files, 'image');
+
+  const payload = {
+    ...req.body,
+    image,
+    customerTypePrice: req.body.customerTypePrice
+      ? JSON.parse(req.body.customerTypePrice)
+      : [],
+  };
+  console.log(payload);
+
   const result = await ProductService.createProductToDB(payload);
 
   sendResponse(res, {
@@ -20,6 +29,7 @@ const createProduct = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 
 /**
  * Get all products (with search)

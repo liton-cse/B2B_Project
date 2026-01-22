@@ -2,8 +2,14 @@
  * Banner interface
  * Single banner configuration for the system
  */
+export interface webBanner{
+  image: string;
+}
+
+export interface mobileBanner{
+  image: string;
+} 
 export interface IBanner {
-  bannerName: string;
-  description: string;
-  icon: string;
+  webBanners?: webBanner[];
+  mobileBanners?: mobileBanner[];
 }

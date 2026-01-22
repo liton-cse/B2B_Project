@@ -1,31 +1,26 @@
-import { IBanner } from './banar.interface';
-import { BannerModel } from './banar.model';
+import { IBanner } from "./banar.interface";
+import { BannerModel } from "./banar.model";
+
 
 /**
- * Create or Update Banner (Upsert)
- * If banner exists → update
- * If not → create
+ * Create banner if not exists, or update web/mobile banners
  */
-const upsertBannerToDB = async (payload: IBanner) => {
+export const createAndUpdateBannerService = async (payload: IBanner) => {
   const banner = await BannerModel.findOne();
 
   if (banner) {
-    return await BannerModel.findByIdAndUpdate(banner._id, payload, {
-      new: true,
-    });
+    banner.webBanners = payload.webBanners || banner.webBanners;
+    banner.mobileBanners = payload.mobileBanners || banner.mobileBanners;
+    return await banner.save();
   }
-
   return await BannerModel.create(payload);
 };
 
-/**
- * Get Banner
- */
-const getBannerFromDB = async () => {
-  return await BannerModel.findOne();
-};
 
-export const BannerService = {
-  upsertBannerToDB,
-  getBannerFromDB,
+/**
+ * Get banner configuration
+ * Returns the single banner document
+ */
+export const getBannerService = async () => {
+  return await BannerModel.findOne().lean();
 };

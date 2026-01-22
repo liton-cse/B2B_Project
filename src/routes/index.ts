@@ -32,7 +32,7 @@ const apiRoutes = [
     route: revieweRouter,
   },
   {
-    path: '/banar',
+    path: '/banner',
     route: BannerRoutes,
   },
   {

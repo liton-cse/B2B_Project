@@ -27,6 +27,12 @@ const fileUploadHandler = () => {
         case 'image':
           uploadDir = path.join(baseUploadDir, 'image');
           break;
+        case 'webBanner':
+          uploadDir = path.join(baseUploadDir, 'webBanner');
+          break;
+        case 'mobileBanner':
+          uploadDir = path.join(baseUploadDir, 'mobileBanner');
+          break;
         case 'media':
           uploadDir = path.join(baseUploadDir, 'media');
           break;
@@ -55,7 +61,7 @@ const fileUploadHandler = () => {
 
   //file filter
   const filterFilter = (req: Request, file: any, cb: FileFilterCallback) => {
-    if (file.fieldname === 'image') {
+    if (file.fieldname === 'image' || file.fieldname === 'webBanner' || file.fieldname === 'mobileBanner') {
       if (
         file.mimetype === 'image/jpeg' ||
         file.mimetype === 'image/png' ||
@@ -97,6 +103,8 @@ const fileUploadHandler = () => {
     fileFilter: filterFilter,
   }).fields([
     { name: 'image', maxCount: 3 },
+    { name: 'webBanner', maxCount: 6 },
+    { name: 'mobileBanner', maxCount: 4 },
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },
   ]);

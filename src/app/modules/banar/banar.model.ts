@@ -1,30 +1,53 @@
-import { Schema, model } from 'mongoose';
-import { IBanner } from './banar.interface';
+import { Schema, model, Document } from "mongoose";
+
+import { IBanner, webBanner as WebBanner, mobileBanner as MobileBanner } from "./banar.interface";
 
 /**
- * Banner Schema
- * Only ONE document should exist
+ * Web banner schema
+ * _id disabled because banners don't need individual IDs
  */
-
-const bannerSchema = new Schema<IBanner>(
+const WebBannerSchema = new Schema<WebBanner>(
   {
-    bannerName: {
+    image: {
       type: String,
       required: true,
-      trim: true,
-    },
-    description: {
+      trim: true
+    }
+  },
+  { _id: false }
+);
+
+/**
+ * Mobile banner schema
+ */
+const MobileBannerSchema = new Schema<MobileBanner>(
+  {
+    image: {
       type: String,
       required: true,
+      trim: true
+    }
+  },
+  { _id: false }
+);
+
+/**
+ * Main banner schema
+ */
+const BannerSchema = new Schema<IBanner>(
+  {
+    webBanners: {
+      type: [WebBannerSchema],
+      default: []
     },
-    icon: {
-      type: String,
-      required: true,
-    },
+    mobileBanners: {
+      type: [MobileBannerSchema],
+      default: []
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-export const BannerModel = model<IBanner>('Banner', bannerSchema);
+export const BannerModel = model<IBanner>("Banner", BannerSchema);

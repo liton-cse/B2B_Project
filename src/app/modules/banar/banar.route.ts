@@ -1,17 +1,27 @@
 import { Router } from 'express';
-import { BannerController } from './banar.controller';
-import auth from '../../middlewares/auth';
 import { USER_ROLES } from '../../../enums/user';
+import auth from '../../middlewares/auth';
+import {
+  getBannerController,
+  createAndUpdateBannerController,
+} from './banar.controller';
+import fileUploadHandler from '../../middlewares/fileUploadHandler';
 
 const router = Router();
 
-/**
- * Banner routes
- * PUT → create/update (single banner)
- * GET → fetch banner
- */
+// Get banner (ADMIN + USER)
+router.get(
+  '/',
+  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+  getBannerController
+);
 
-router.put('/', auth(USER_ROLES.ADMIN), BannerController.upsertBanner);
-router.get('/', auth(USER_ROLES.ADMIN), BannerController.getBanner);
+// Create / Update banner (ADMIN only)
+router.post(
+  '/create-update',
+  auth(USER_ROLES.ADMIN),
+  fileUploadHandler(),
+  createAndUpdateBannerController
+);
 
 export const BannerRoutes = router;
