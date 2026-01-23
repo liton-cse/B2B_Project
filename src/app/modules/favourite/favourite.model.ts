@@ -9,7 +9,7 @@ const favouriteSchema = new Schema(
     },
     productId: {
       type: Schema.Types.ObjectId,
-      ref: 'Product&Catelog',
+      ref: 'ProductAndCatelog',
       required: true,
     },
   },

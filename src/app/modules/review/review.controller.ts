@@ -28,6 +28,29 @@ class ReviewController {
       data: reviews,
     });
   }
+
+
+    async deleteProductReviews(req: Request, res: Response) {
+    const { id } = req.params;
+    
+    const reviews = await reviewService.deleteReviewsByProduct(id);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.CREATED,
+      message: 'review deleted successfully',
+      data: reviews,
+    });
+  }
+
+    async getProductFeatureList(req: Request, res: Response) {
+    const lists = await reviewService.getProductFeatureList();
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.CREATED,
+      message: 'Feature list retrieved successfully',
+      data: lists,
+    });
+  }
 }
 
 export const reviewController = new ReviewController();

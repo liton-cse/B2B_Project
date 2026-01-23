@@ -84,9 +84,14 @@ const deleteProductFromDB = async (id: string) => {
   return await ProductModel.findByIdAndDelete(id);
 };
 
+const getAllProductsCategoryFromDB = async () => {
+  return await ProductModel.find().distinct('category');
+};
+
 export const ProductService = {
   createProductToDB,
   getAllProductsFromDB,
+  getAllProductsCategoryFromDB,
   getSingleProductFromDB,
   updateProductToDB,
   deleteProductFromDB,
