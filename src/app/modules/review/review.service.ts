@@ -15,6 +15,13 @@ class ReviewService {
       .populate('productId', 'productName')
       .sort({ createdAt: -1 });
   }
+
+    async getAllReviewsByProduct() {
+    return await ReviewModel.find()
+      .populate('userId', 'name email image ')
+      .populate('productId', 'productName')
+      .sort({ createdAt: -1 });
+  }
   async deleteReviewsByProduct(id: string) { 
     return await ReviewModel.findByIdAndDelete({
       _id: new Types.ObjectId(id),

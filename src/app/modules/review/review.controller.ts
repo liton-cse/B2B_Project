@@ -29,6 +29,16 @@ class ReviewController {
     });
   }
 
+    async getAllProductReviews(req: Request, res: Response) {
+    const reviews = await reviewService.getAllReviewsByProduct();
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.CREATED,
+      message: 'review created successfully',
+      data: reviews,
+    });
+  }
+
 
     async deleteProductReviews(req: Request, res: Response) {
     const { id } = req.params;

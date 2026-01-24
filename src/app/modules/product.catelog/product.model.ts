@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import mongoose, { Schema, model, Document } from 'mongoose';
 import { IProduct, ICustomerTypePrice } from './product.interface';
 
 
@@ -37,10 +37,15 @@ const productSchema = new Schema<IProduct>(
       required: true,
       trim: true,
     },
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: true,
+    },
     category: {
       type: String,
       required: true,
-      index: true,
+      trim: true,
     },
     unit: {
       type: String,

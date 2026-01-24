@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 
 export interface ICustomerTypePrice{
   categoryName: string;
@@ -7,6 +8,7 @@ export interface ICustomerTypePrice{
 export interface IProduct {
   productName: string;
   description: string;
+  categoryId: Types.ObjectId;
   category: string;
   unit: string;
   basePrice: number;

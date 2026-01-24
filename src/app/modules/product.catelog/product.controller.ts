@@ -4,13 +4,18 @@ import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { ProductService } from './product.service';
 import { getSingleFilePath } from '../../../shared/getFilePath';
+import { CategoryModel } from '../category.management/category.model';
 
 /**
  * Create product
  */
 const createProduct = catchAsync(async (req: Request, res: Response) => {
   const image = getSingleFilePath(req.files, 'image');
-
+  const category = req.body.category;
+  const categoryIds = await CategoryModel.findOne({ categoryName: category }).select('_id');
+  if (categoryIds) {
+    req.body.categoryId = categoryIds._id;
+  } 
   const payload = {
     ...req.body,
     image,
@@ -18,7 +23,7 @@ const createProduct = catchAsync(async (req: Request, res: Response) => {
       ? JSON.parse(req.body.customerTypePrice)
       : [],
   };
-  console.log(payload);
+
 
   const result = await ProductService.createProductToDB(payload);
 

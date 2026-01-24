@@ -8,6 +8,7 @@ import { FavouriteRoutes } from '../app/modules/favourite/favourite.routes';
 import { InvoiceRoutes } from '../app/modules/Invoice/invoice.routes';
 import { PaymentRoutes } from '../app/modules/payments/payments.routes';
 import { CustomerTypeRoutes } from '../app/modules/customer.type/customerr.type.routes';
+import { CategoryRoutes } from '../app/modules/category.management/category.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -38,6 +39,10 @@ const apiRoutes = [
   {
     path: '/favourite',
     route: FavouriteRoutes,
+  },
+  {
+    path: '/category',
+    route: CategoryRoutes,
   },
   {
     path: '/invoice',

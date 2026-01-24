@@ -17,6 +17,12 @@ router.get(
 );
 
 router.get(
+  '/',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  reviewController.getAllProductReviews
+);
+
+router.get(
   '/features/list',
   auth(USER_ROLES.USER),
   reviewController.getProductFeatureList
