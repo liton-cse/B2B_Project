@@ -28,7 +28,7 @@ const getMyFavourites = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
 
   const result = await FavouriteService.getUserFavouritesFromDB(userId);
-
+  console.log(result);
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,

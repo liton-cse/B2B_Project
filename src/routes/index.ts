@@ -5,10 +5,10 @@ import { ProductAndcatelogRoutes } from '../app/modules/product.catelog/product.
 import { BannerRoutes } from '../app/modules/banar/banar.route';
 import { revieweRouter } from '../app/modules/review/review.routes';
 import { FavouriteRoutes } from '../app/modules/favourite/favourite.routes';
-import { InvoiceRoutes } from '../app/modules/Invoice/invoice.routes';
-import { PaymentRoutes } from '../app/modules/payments/payments.routes';
 import { CustomerTypeRoutes } from '../app/modules/customer.type/customerr.type.routes';
 import { CategoryRoutes } from '../app/modules/category.management/category.routes';
+import { CartRoutes } from '../app/modules/addTo.cart/cart.routes';
+import { FeatureProductRoutes } from '../app/modules/feature.product/feature.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -45,13 +45,12 @@ const apiRoutes = [
     route: CategoryRoutes,
   },
   {
-    path: '/invoice',
-    route: InvoiceRoutes,
-  },
-  {
-    path: '/online-payment',
-    route: PaymentRoutes,
-  },
+    path: '/cart',
+    route: CartRoutes,
+  },{
+    path: '/feature-product',
+    route: FeatureProductRoutes,
+  }
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

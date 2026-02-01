@@ -55,6 +55,7 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
 /**
  * Get single product
  */
@@ -118,9 +119,26 @@ const getAllProductsCategory = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
+
+const getAllProductsByCustomerType = catchAsync(async (req: Request, res: Response) => {
+  const { search ,category} = req.query;
+  const userId = req.user?.id;
+  const result = await ProductService.getAllProductsByCustomerTypeFromDB(
+    { search: search as string, category: category as string },userId
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Products retrieved successfully',
+    data: result,
+  });
+});
+
 export const ProductController = {
   createProduct,
   getAllProducts,
+  getAllProductsByCustomerType,
   getSingleProduct,
   getAllProductsCategory,
   updateProduct,

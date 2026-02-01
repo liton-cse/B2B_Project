@@ -22,66 +22,32 @@ const toggleFavouriteToDB = async (userId: string, productId: string) => {
 
 const getUserFavouritesFromDB = async (userId: string) => {
   const favourites = await Favourite.aggregate([
-    // 1️⃣ Only this user's favourites
+    // 1️⃣ Match user's favourites
     {
       $match: {
-        userId: new Types.ObjectId(userId),
+        userId: new Types.ObjectId(userId), // change if stored as string
       },
     },
 
-    // 2️⃣ Join Product
+    // 2️⃣ Join Product collection
     {
       $lookup: {
-        from: 'productandcatelogs',
+        from: 'productandcatelogs', // ⚠️ must match actual collection name
         localField: 'productId',
         foreignField: '_id',
         as: 'product',
       },
     },
-    { $unwind: '$product' },
 
-    // 3️⃣ Join Reviews for rating
+    // 3️⃣ Convert product array → object
     {
-      $lookup: {
-        from: 'reviews',
-        localField: 'product._id',
-        foreignField: 'productId',
-        as: 'reviews',
-      },
-    },
-
-    // 4️⃣ Calculate rating & stock status
-    {
-      $addFields: {
-        avgRating: { $avg: '$reviews.rating' },
-        reviewCount: { $size: '$reviews' },
-        'product.stockStatus': {
-          $cond: [
-            { $gt: ['$product.stock', 0] },
-            'available',
-            'out_of_stock',
-          ],
-        },
-      },
-    },
-
-    {
-      $replaceRoot: {
-        newRoot: {
-          $mergeObjects: [
-            '$product',
-            {
-              avgRating: { $ifNull: ['$avgRating', 0] },
-              reviewCount: '$reviewCount',
-            },
-          ],
-        },
-      },
+      $unwind: '$product',
     },
   ]);
 
   return favourites;
 };
+
 
 
 

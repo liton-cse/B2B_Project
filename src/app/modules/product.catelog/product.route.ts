@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { ProductController } from './product.controller';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
+import { USER_ROLES } from '../../../enums/user';
+import auth from '../../middlewares/auth';
 
 const router = Router();
-
+router.get('/customer-type',auth(USER_ROLES.USER), ProductController.getAllProductsByCustomerType);
 router.post('/', fileUploadHandler(), ProductController.createProduct);
 router.get('/', ProductController.getAllProducts);
 router.get('/:id', ProductController.getSingleProduct);
