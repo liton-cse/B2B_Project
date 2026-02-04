@@ -5,7 +5,7 @@ import { USER_ROLES } from '../../../enums/user';
 
 const router = Router();
 
-router.post('/', auth(USER_ROLES.USER), FavouriteController.toggleFavourite);
-router.get('/', auth(USER_ROLES.USER), FavouriteController.getMyFavourites);
+router.post('/', auth(USER_ROLES.USER,USER_ROLES.ADMIN), FavouriteController.toggleFavourite);
+router.get('/', auth(USER_ROLES.USER,USER_ROLES.ADMIN), FavouriteController.getMyFavourites);
 
 export const FavouriteRoutes = router;
