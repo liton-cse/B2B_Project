@@ -1,9 +1,27 @@
 import { ProductModel } from './product.model';
 import { IProduct } from './product.interface';
 import { User } from '../user/user.model';
+import { QuickBooksService } from '../quickbook/quickbook.service';
+import session from 'express-session';
+import { QuickBooksToken } from '../quickbook/quickbooksToken.model';
+const quickBooksService = new QuickBooksService();
 
 const createProductToDB = async (payload: IProduct) => {
-  return await ProductModel.create(payload);
+      const existingProduct = await ProductModel.findOne({ sku: payload.sku });
+    if (existingProduct) {
+      throw new Error('Product with this SKU already exists');
+    }
+  const product = await ProductModel.create(payload);
+  // Sync with QuickBooks
+  const quickbookToken = await QuickBooksToken.find().select('realmId accessToken').lean();
+    try {
+      const qbItemId = await quickBooksService.createItem(product, quickbookToken[0].realmId, quickbookToken[0].accessToken); 
+      product.quickbooksId = qbItemId;
+      await product.save();
+    } catch (error) {
+      console.error('Failed to sync product with QuickBooks:', error);
+    }
+  return product;
 };
 
 

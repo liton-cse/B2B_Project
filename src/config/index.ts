@@ -27,4 +27,10 @@ export default {
     address: process.env.SUPER_ADMIN_ADDRESS,
     contact: process.env.SUPER_ADMIN_CONTACT,
   },
+    quickbooks: {
+    clientId: process.env.QUICKBOOKS_CLIENT_ID || '',
+    clientSecret: process.env.QUICKBOOKS_CLIENT_SECRET || '',
+    redirectUri: process.env.QUICKBOOKS_REDIRECT_URI || 'http://localhost:5000/api/v1/quickbooks/callback',
+    environment: process.env.QUICKBOOKS_ENVIRONMENT || 'sandbox',
+  },
 };

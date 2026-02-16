@@ -47,6 +47,8 @@ const productSchema = new Schema<IProduct>(
       required: true,
       trim: true,
     },
+    sku: { type: String, required: true, unique: true },
+    quickbooksId: { type: String, sparse: true },
     unit: {
       type: String,
       required: true,
@@ -69,6 +71,7 @@ const productSchema = new Schema<IProduct>(
       required: true,
       min: 0,
     },
+      isActive: { type: Boolean, default: true },
   },
   {
     timestamps: true,

@@ -6,6 +6,14 @@ export interface IQueryOptions {
   page?: number;
   limit?: number;
 }
+
+export interface ICreditInfo {
+  creditLimit: number;
+  currentOutstanding: number;
+  availableCredit: number;
+  creditStatus: 'good' | 'near limit' | 'blocked';
+  lastUpdated: Date;
+}
 export type IUser = {
   name: string;
   businessType: string;
@@ -20,7 +28,13 @@ export type IUser = {
   status: 'pending' | 'approve' | 'reject' | 'block' | 'unblock';
   customerType: string;
   isActive: 'active' | 'inActive';
+  quickbooksId?: string; // QuickBooks Customer ID
+  creditInfo: ICreditInfo;
   verified: boolean;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;

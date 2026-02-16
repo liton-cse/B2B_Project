@@ -84,10 +84,58 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const syncWithQuickBooks = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await UserService.syncWithQuickBooks(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User synced with QuickBooks successfully',
+    data: result,
+  });
+});
+
+const assignCreditLimit = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const { creditLimit, reason, expiryDate } = req.body;
+  const adminId = req.user.id;
+
+  const result = await UserService.assignCreditLimit(
+    userId,
+    creditLimit,
+    adminId,
+    reason,
+    expiryDate
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Credit limit assigned successfully',
+    data: result,
+  });
+});
+
+const getUserCreditSummary = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const result = await UserService.getUserCreditSummary(userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Credit summary retrieved successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   createUser,
   getUserProfile,
   getAllUsers,
   updateProfile,
   updateUserStatusAndCustomerType,
+  assignCreditLimit,
+  getUserCreditSummary,
+  syncWithQuickBooks
 };

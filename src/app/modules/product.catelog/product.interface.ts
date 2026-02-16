@@ -10,9 +10,14 @@ export interface IProduct {
   description: string;
   categoryId: Types.ObjectId;
   category: string;
+  sku?: string;
   unit: string;
   basePrice: number;
   customerTypePrice: ICustomerTypePrice[];
   image: string;
   stock: number;
+  quickbooksId?: string;
+  isActive?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }

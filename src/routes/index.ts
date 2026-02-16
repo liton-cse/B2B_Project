@@ -9,6 +9,9 @@ import { CustomerTypeRoutes } from '../app/modules/customer.type/customerr.type.
 import { CategoryRoutes } from '../app/modules/category.management/category.routes';
 import { CartRoutes } from '../app/modules/addTo.cart/cart.routes';
 import { FeatureProductRoutes } from '../app/modules/feature.product/feature.routes';
+import { QuickBooksRoutes } from '../app/modules/quickbook/quickbook.routes';
+import { OrderRoutes } from '../app/modules/order/order.route';
+import { CreditRoutes } from '../app/modules/credit/credit.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -47,10 +50,24 @@ const apiRoutes = [
   {
     path: '/cart',
     route: CartRoutes,
-  },{
+  },
+  {
     path: '/feature-product',
     route: FeatureProductRoutes,
-  }
+  },
+  {
+    path: '/quickbooks',
+    route: QuickBooksRoutes,
+  },
+  {
+    path: '/orders',
+    route:OrderRoutes,
+  },
+  {
+    path: '/credit',
+    route: CreditRoutes,
+  },
+
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

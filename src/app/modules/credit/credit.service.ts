@@ -1,0 +1,207 @@
+import { User } from '../user/user.model';
+import { CreditTransaction, CreditLimit } from './credit.model';
+import { Types } from 'mongoose';
+
+export class CreditService {
+async assignCreditLimit(
+  userId: string,
+  creditLimit: number,
+  assignedBy: string,
+  reason: string,
+  expiryDate?: Date
+): Promise<void> {
+  // Start a session for transaction
+  const session = await User.startSession();
+  session.startTransaction();
+
+  try {
+    // Load the user with the session
+    const user = await User.findById(userId).session(session);
+    if (!user) throw new Error('User not found');
+
+    // Save credit limit history
+    const creditLimitRecord = new CreditLimit({
+      userId,
+      creditLimit,
+      assignedBy,
+      reason,
+      effectiveDate: new Date(),
+      expiryDate
+    });
+    await creditLimitRecord.save({ session });
+
+    // Update user's credit info safely using updateOne
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          'creditInfo.creditLimit': creditLimit,
+          'creditInfo.availableCredit': creditLimit - (user.creditInfo?.currentOutstanding || 0),
+          'creditInfo.creditStatus': this.calculateCreditStatus(
+            creditLimit,
+            user.creditInfo?.currentOutstanding || 0
+          ),
+          'creditInfo.lastUpdated': new Date()
+        }
+      },
+      { session }
+    );
+
+    // Commit the transaction
+    await session.commitTransaction();
+  } catch (error) {
+    // Abort if anything fails
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    // End session
+    session.endSession();
+  }
+}
+
+
+  async updateOutstandingBalance(
+    userId: string,
+    amount: number,
+    orderId: string,
+    description: string
+  ): Promise<void> {
+    const session = await User.startSession();
+    session.startTransaction();
+
+    try {
+      const user = await User.findById(userId).session(session);
+      if (!user) throw new Error('User not found');
+
+      const previousBalance = user.creditInfo?.currentOutstanding || 0;
+      const newBalance = previousBalance + amount;
+
+      // Create transaction record
+      const transaction = new CreditTransaction({
+        userId,
+        orderId,
+        amount: Math.abs(amount),
+        type: amount > 0 ? 'debit' : 'credit',
+        description,
+        previousBalance,
+        newBalance
+      });
+      await transaction.save({ session });
+
+      // Update user's credit info
+      user.creditInfo = {
+        ...user.creditInfo,
+        currentOutstanding: newBalance,
+        availableCredit: (user.creditInfo?.creditLimit || 0) - newBalance,
+        creditStatus: this.calculateCreditStatus(
+          user.creditInfo?.creditLimit || 0,
+          newBalance
+        ),
+        lastUpdated: new Date()
+      };
+      await user.save({ session });
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  async checkCreditAvailability(userId: string, orderAmount: number): Promise<boolean> {
+    const user = await User.findById(userId);
+    if (!user) return false;
+
+    const availableCredit = user.creditInfo?.availableCredit || 0;
+    const creditStatus = user.creditInfo?.creditStatus;
+
+    // Block if credit status is blocked or insufficient credit
+    if (creditStatus === 'blocked') return false;
+    if (availableCredit < orderAmount) return false;
+
+    return true;
+  }
+
+  async getCreditSummary(userId: string): Promise<any> {
+    const user = await User.findById(userId).select('creditInfo name email businessName');
+    if (!user) throw new Error('User not found');
+
+    const recentTransactions = await CreditTransaction.find({ userId })
+      .populate('orderId', 'orderNumber totalAmount')
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    const creditHistory = await CreditLimit.find({ userId })
+      .populate('assignedBy', 'name email')
+      .sort({ effectiveDate: -1 });
+
+    return {
+      currentCreditInfo: user.creditInfo,
+      name: user.name,
+      email: user.email,
+      businessName: user.businessName,
+      recentTransactions,
+      creditHistory
+    };
+  }
+
+  async getUserCreditTransactions(
+    userId: string,
+    query: any
+  ): Promise<{ transactions: any[]; total: number }> {
+    const { page = 1, limit = 20, startDate, endDate } = query;
+    const skip = (page - 1) * limit;
+
+    const filter: any = { userId };
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    const transactions = await CreditTransaction.find(filter)
+      .populate('orderId', 'orderNumber totalAmount')
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const total = await CreditTransaction.countDocuments(filter);
+
+    return { transactions, total };
+  }
+
+  async getCreditUtilizationReport(): Promise<any> {
+    const users = await User.find({
+      'creditInfo.creditLimit': { $gt: 0 }
+    }).select('name email businessName creditInfo');
+
+    const report = users.map(user => ({
+      userId: user._id,
+      businessName: user.businessName,
+      email: user.email,
+      creditLimit: user.creditInfo.creditLimit,
+      currentOutstanding: user.creditInfo.currentOutstanding,
+      availableCredit: user.creditInfo.availableCredit,
+      utilizationPercentage: (user.creditInfo.currentOutstanding / user.creditInfo.creditLimit) * 100,
+      status: user.creditInfo.creditStatus
+    }));
+
+    return report;
+  }
+
+  private calculateCreditStatus(creditLimit: number, outstanding: number): 'good' | 'near limit' | 'blocked' {
+    if (creditLimit === 0) return 'good';
+    
+    const usagePercentage = (outstanding / creditLimit) * 100;
+
+    if (usagePercentage >= 100) {
+      return 'blocked';
+    } else if (usagePercentage >= 80) {
+      return 'near limit';
+    } else {
+      return 'good';
+    }
+  }
+}

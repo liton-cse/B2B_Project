@@ -41,4 +41,11 @@ router.patch(
   UserController.updateUserStatusAndCustomerType
 );
 
+// QuickBooks sync
+router.post('/:id/sync-quickbooks', auth(USER_ROLES.ADMIN), UserController.syncWithQuickBooks);
+
+// Credit management
+router.post('/:userId/credit-limit', auth(USER_ROLES.ADMIN), UserController.assignCreditLimit);
+router.get('/:userId/credit-summary', auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getUserCreditSummary);
+
 export const UserRoutes = router;

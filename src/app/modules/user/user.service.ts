@@ -8,10 +8,26 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IQueryOptions, IUser } from './user.interface';
 import { User } from './user.model';
+import { QuickBooksService } from '../quickbook/quickbook.service';
+import { CreditService } from '../credit/credit.service';
+import session from 'express-session';
+import { QuickBooksToken } from '../quickbook/quickbooksToken.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
+    const existingUser = await User.findOne({ email: payload.email });
+    if (existingUser) {
+      throw new Error('User already exists with this email');
+    }
   //set role
   payload.role = USER_ROLES.USER;
+      // Initialize credit info
+    payload.creditInfo = {
+      creditLimit: 0,
+      currentOutstanding: 0,
+      availableCredit: 0,
+      creditStatus: 'good',
+      lastUpdated: new Date()
+    };
   const createUser = await User.create(payload);
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
@@ -171,10 +187,84 @@ const getAllUsersFromDB = async (query: IQueryOptions) => {
   return users;
 };
 
+
+const syncWithQuickBooks = async (
+  userId: string
+): Promise<Partial<IUser>> => {
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const quickBooksService = new QuickBooksService();
+
+    const tokenDoc = await QuickBooksToken.findOne();
+    if (!tokenDoc) {
+      throw new Error("QuickBooks token not found");
+    }
+
+    if (!user.quickbooksId) {
+
+      const qbCustomerId =
+        await quickBooksService.createCustomer(
+          user,
+          tokenDoc.realmId,
+          tokenDoc.accessToken
+        );
+
+      console.log("Saving QuickBooks ID to user...");
+
+      user.quickbooksId = qbCustomerId;
+
+      await user.save();
+
+      console.log("User saved successfully");
+    }
+
+    const { password, ...safeUser } = user.toObject();
+
+    return safeUser;
+
+  } catch (error: any) {
+
+    console.error("REAL ERROR:", error);
+
+    throw error; 
+  }
+};
+
+
+
+  const assignCreditLimit = async(
+    userId: string,
+    creditLimit: number,
+    assignedBy: string,
+    reason: string,
+    expiryDate?: Date
+  ): Promise<Partial<IUser>> =>{
+    const creditService = new CreditService();
+    await creditService.assignCreditLimit(userId, creditLimit, assignedBy, reason, expiryDate);
+    
+    const user = await User.findById(userId).select('-password');
+    return user!;
+}
+  
+  const getUserCreditSummary = async (userId: string): Promise<any> => {
+    const creditService = new CreditService();
+    return await creditService.getCreditSummary(userId);
+  };
+
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   updateProfileToDB,
   updateUserProfileStatusToDB,
   getAllUsersFromDB,
+  syncWithQuickBooks,
+  assignCreditLimit,
+  getUserCreditSummary
 };

@@ -2,57 +2,109 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
-import { createOrderService, markPaidService } from './order.service';
-import { orderModel } from './order.model';
-import { createInvoiceQB } from '../customer.payment/customer.service';
+import { OrderService } from './order.service';
 
+const orderService = new OrderService();
 
-/**
- * Create Order
- */
 const createOrder = catchAsync(async (req: Request, res: Response) => {
-  const order = await createOrderService(req.body);
+  const userId = req.user.id;
+  const orderData = req.body;
+
+  const result = await orderService.createOrder(userId, orderData);
 
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.CREATED,
-    message: 'Order created successfully',
-    data: order,
+    message: 'Order created successfully. Invoice and payment link sent to email.',
+    data: result,
   });
 });
 
-/**
- * Complete Payment & Create QuickBooks Invoice
- */
-const completePayment = catchAsync(async (req: Request, res: Response) => {
-  const { orderId } = req.body;
-
-  const order = await orderModel.findById(orderId).populate('customer');
-
-  if (!order) {
-    throw new Error('Order not found');
-  }
-
-  const customer: any = order.customer;
-
-  const invoiceId = await createInvoiceQB(
-    (req.session as any).realmId,
-    (req.session as any).qbAccessToken,
-    order,
-    customer.qbCustomerId
-  );
-
-  const updatedOrder = await markPaidService(orderId, invoiceId);
+const getMyOrders = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const result = await orderService.getUserOrders(userId, req.query);
 
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Payment completed & invoice created',
-    data: updatedOrder,
+    message: 'Orders retrieved successfully',
+    data: result.orders,
+  });
+});
+
+const getAllOrders = catchAsync(async (req: Request, res: Response) => {
+  const result = await orderService.getAllOrders(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'AllOrders retrieved successfully',
+    // meta: {
+    //   page: parseInt(req.query.page as string) || 1,
+    //   limit: parseInt(req.query.limit as string) || 10,
+    //   total: result.total,
+    // },
+    data: result.orders,
+  });
+});
+
+const getOrderById = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const result = await orderService.getOrderById(orderId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Order details retrieved successfully',
+    data: result,
+  });
+});
+
+const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  const result = await orderService.updateOrderStatus(orderId, status);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Order status updated successfully',
+    data: result,
+  });
+});
+
+const cancelOrder = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const userId = req.user._id;
+
+  const result = await orderService.cancelOrder(orderId, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Order cancelled successfully',
+    data: result,
+  });
+});
+
+const getOrderStats = catchAsync(async (req: Request, res: Response) => {
+  const result = await orderService.getOrderStats();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Order statistics retrieved successfully',
+    data: result,
   });
 });
 
 export const OrderController = {
   createOrder,
-  completePayment,
+  getMyOrders,
+  getAllOrders,
+  getOrderById,
+  updateOrderStatus,
+  cancelOrder,
+  getOrderStats,
 };
