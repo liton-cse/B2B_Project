@@ -15,9 +15,9 @@ export class QuickBooksService {
   /**
    * Ensure a valid access token for the user
    */
-  async getValidToken(userId: string) {
+  async getValidToken() {
     // Find token in DB
-    const token = await QuickBooksToken.findOne({ userId });
+    const token = await QuickBooksToken.findOne();
     if (!token) throw new Error('QuickBooks not connected');
 
     // Refresh token if expired
@@ -351,41 +351,6 @@ async createPaymentLink(
     return '';
   }
 }
-
-
-async sendPaymentLink(
-  invoiceId: string,
-  email: string,
-  realmId: string,
-  accessToken: string
-): Promise<void> {
-  try {
-    const url = `${this.qbConfig.getBaseUrl(
-      realmId
-    )}/invoice/${invoiceId}/send?sendTo=${encodeURIComponent(email)}`;
-
-    const headers = await this.qbConfig.getHeaders(
-      realmId,
-      accessToken
-    );
-
-    const response = await axios.post(url, {}, { headers });
-
-    console.log(
-      `✅ QuickBooks emailed invoice ${invoiceId} to ${email}`
-    );
-
-    return;
-  } catch (error: any) {
-    console.error(
-      'Error sending QuickBooks invoice email:',
-      error?.response?.data || error
-    );
-
-    throw new Error('Failed to send invoice email');
-  }
-}
-
 
   async getInvoice(invoiceId: string, realmId: string, accessToken: string): Promise<any> {
     try {

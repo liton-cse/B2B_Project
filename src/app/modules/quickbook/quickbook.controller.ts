@@ -6,6 +6,9 @@ import { QuickBooksConfig } from './quickbook.config';
 import { checkQuickBooksConnection, QuickBooksService } from './quickbook.service';
 import { QuickBooksToken } from './quickbooksToken.model';
 
+
+const quickBooksService = new QuickBooksService();
+
 const qbConfig = QuickBooksConfig.getInstance();
 const qbService = new QuickBooksService();
 
@@ -78,8 +81,8 @@ sendResponse(res, {
 
 const getInvoice = catchAsync(async (req: Request, res: Response) => {
   const { invoiceId } = req.params;
-  const quickbookToken = await QuickBooksToken.find().select('realmId accessToken').lean();
-  const invoice = await qbService.getInvoice(invoiceId, quickbookToken[0].realmId, quickbookToken[0].accessToken);
+  const token = await quickBooksService.getValidToken();
+  const invoice = await qbService.getInvoice(invoiceId, token?.realmId || '', token?.accessToken || '');
 
   sendResponse(res, {
     success: true,

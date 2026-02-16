@@ -1,6 +1,7 @@
 import {
   IAdminApprovalEmail,
   ICreateAccount,
+  IInvoicePaymentLinkEmail,
   IResetPassword,
 } from '../types/emailTamplate';
 
@@ -73,8 +74,46 @@ const adminApprovalEmail = (values: IAdminApprovalEmail) => {
   return data;
 };
 
+const invoicePaymentLinkEmail = (values: IInvoicePaymentLinkEmail) => {
+  const data = {
+    to: values.email,
+    subject: 'Payment Link for Invoice',
+    html: `
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
+  <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    
+    <img 
+      src="https://i.postimg.cc/6pgNvKhD/logo.png" 
+      alt="Company Logo" 
+      style="display: block; margin: 0 auto 20px; width:150px" 
+    />
+
+    <div style="text-align: center;">
+      <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        Your invoice <strong>${values.invoiceNumber}</strong> is ready for payment.
+      </p>
+      <div style="background-color: #277E16; width: 120px; padding: 12px; text-align: center; border-radius: 8px; color: #fff; font-size: 24px; letter-spacing: 2px; margin: 20px auto;">
+        ${values.orderNumber}
+      </div>
+      <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        Please click the button below to proceed with payment:
+      </p>
+      <a href="${values.paymentLink}" target="_blank" style="display:inline-block;background-color:#277E16;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:bold;">Pay Now</a>
+    </div>
+
+  </div>
+</body>
+    `,
+  };
+
+  return data;
+};
+
+
+
 export const emailTemplate = {
   createAccount,
   resetPassword,
   adminApprovalEmail,
+  invoicePaymentLinkEmail
 };

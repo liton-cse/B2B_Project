@@ -6,6 +6,8 @@ import { IOrder, OrderStatus, PaymentStatus } from './order.interface';
 import mongoose from 'mongoose';
 import { ProductModel } from '../product.catelog/product.model';
 import { QuickBooksToken } from '../quickbook/quickbooksToken.model';
+import { emailTemplate } from '../../../shared/emailTemplate';
+import { emailHelper } from '../../../helpers/emailHelper';
 
 export class OrderService {
   private quickBooksService: QuickBooksService;
@@ -67,28 +69,30 @@ export class OrderService {
       });
       await order.save({ session });
 
-      const quickbookToken = await QuickBooksToken.findOne().select('realmId accessToken').lean().session(session);
-
+      const token = await this.quickBooksService.getValidToken();
+        
       // Create QuickBooks customer if not exists
       if (!user.quickbooksId) {
-        const qbCustomerId = await this.quickBooksService.createCustomer(user, quickbookToken?.realmId || '', quickbookToken?.accessToken || '');
+        const qbCustomerId = await this.quickBooksService.createCustomer(user, token?.realmId || '', token?.accessToken || '');
         user.quickbooksId = qbCustomerId;
         await User.updateOne({ _id: user._id }, { $set: { quickbooksId: qbCustomerId } }).session(session);
       }
 
       // Create invoice in QuickBooks
-      const invoice = await this.quickBooksService.createInvoice(order, user, quickbookToken?.realmId || '', quickbookToken?.accessToken || '');
+      const invoice = await this.quickBooksService.createInvoice(order, user, token?.realmId || '', token?.accessToken || '');
       order.quickbooksInvoiceId = invoice.invoiceId;
       order.invoiceNumber = invoice.invoiceNumber;
       order.invoiceUrl = invoice.invoiceUrl;
       order.paymentLink = invoice.paymentLink;
 
-      await this.quickBooksService.sendPaymentLink(
-        invoice.invoiceId,
-        user.email,
-        quickbookToken?.realmId || '',
-        quickbookToken?.accessToken || ''
-      );
+      const value = {
+        orderNumber: invoice.orderNumber,
+        invoiceNumber: invoice.invoiceNumber,
+        paymentLink: invoice.paymentLink,
+        email: user.email,
+      };
+      const forgetPassword = emailTemplate.invoicePaymentLinkEmail(value);
+      emailHelper.sendEmail(forgetPassword);
 
 
       await order.save({ session });

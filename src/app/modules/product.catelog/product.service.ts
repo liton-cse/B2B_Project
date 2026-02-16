@@ -13,9 +13,9 @@ const createProductToDB = async (payload: IProduct) => {
     }
   const product = await ProductModel.create(payload);
   // Sync with QuickBooks
-  const quickbookToken = await QuickBooksToken.find().select('realmId accessToken').lean();
+  const token = await quickBooksService.getValidToken();
     try {
-      const qbItemId = await quickBooksService.createItem(product, quickbookToken[0].realmId, quickbookToken[0].accessToken); 
+      const qbItemId = await quickBooksService.createItem(product, token?.realmId || '', token?.accessToken || ''); 
       product.quickbooksId = qbItemId;
       await product.save();
     } catch (error) {
