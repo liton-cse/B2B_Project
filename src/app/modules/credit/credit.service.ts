@@ -1,6 +1,6 @@
 import { User } from '../user/user.model';
 import { CreditTransaction, CreditLimit } from './credit.model';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 export class CreditService {
 async assignCreditLimit(
@@ -23,7 +23,7 @@ async assignCreditLimit(
     const creditLimitRecord = new CreditLimit({
       userId,
       creditLimit,
-      assignedBy,
+      assignedBy: new mongoose.Types.ObjectId(assignedBy),
       reason,
       effectiveDate: new Date(),
       expiryDate
@@ -60,55 +60,71 @@ async assignCreditLimit(
 }
 
 
-  async updateOutstandingBalance(
-    userId: string,
-    amount: number,
-    orderId: string,
-    description: string
-  ): Promise<void> {
-    const session = await User.startSession();
-    session.startTransaction();
+async updateOutstandingBalance(
+  userId: string,
+  amount: number,
+  orderId: string,
+  description: string,
+  session?: mongoose.ClientSession
+): Promise<void> {
 
-    try {
-      const user = await User.findById(userId).session(session);
-      if (!user) throw new Error('User not found');
+  const ownsSession = !session;
+  const dbSession = session || await mongoose.startSession();
 
-      const previousBalance = user.creditInfo?.currentOutstanding || 0;
-      const newBalance = previousBalance + amount;
+  if (ownsSession) dbSession.startTransaction();
 
-      // Create transaction record
-      const transaction = new CreditTransaction({
-        userId,
-        orderId,
-        amount: Math.abs(amount),
-        type: amount > 0 ? 'debit' : 'credit',
-        description,
-        previousBalance,
+  try {
+    const user = await User.findById(userId).session(dbSession);
+    if (!user) throw new Error('User not found');
+
+    const previousBalance = user.creditInfo?.currentOutstanding || 0;
+    const newBalance = previousBalance + amount;
+
+    const transaction = new CreditTransaction({
+      userId,
+      orderId,
+      amount: Math.abs(amount),
+      type: amount > 0 ? 'debit' : 'credit',
+      description,
+      previousBalance,
+      newBalance
+    });
+
+    await transaction.save({ session: dbSession });
+
+    user.creditInfo = {
+      ...user.creditInfo,
+      currentOutstanding: newBalance,
+      availableCredit: (user.creditInfo?.creditLimit || 0) - newBalance,
+      creditStatus: this.calculateCreditStatus(
+        user.creditInfo?.creditLimit || 0,
         newBalance
-      });
-      await transaction.save({ session });
+      ),
+      lastUpdated: new Date()
+    };
 
-      // Update user's credit info
-      user.creditInfo = {
-        ...user.creditInfo,
-        currentOutstanding: newBalance,
-        availableCredit: (user.creditInfo?.creditLimit || 0) - newBalance,
-        creditStatus: this.calculateCreditStatus(
-          user.creditInfo?.creditLimit || 0,
-          newBalance
-        ),
-        lastUpdated: new Date()
-      };
-      await user.save({ session });
+    await user.save({ session: dbSession });
 
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
+    if (ownsSession) {
+      await dbSession.commitTransaction();
+    }
+
+  } catch (error) {
+
+    if (ownsSession) {
+      await dbSession.abortTransaction();
+    }
+
+    throw error;
+
+  } finally {
+
+    if (ownsSession) {
+      dbSession.endSession();
     }
   }
+}
+
 
   async checkCreditAvailability(userId: string, orderAmount: number): Promise<boolean> {
     const user = await User.findById(userId);

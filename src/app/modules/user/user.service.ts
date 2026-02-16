@@ -201,8 +201,8 @@ const syncWithQuickBooks = async (
 
     const quickBooksService = new QuickBooksService();
 
-    const tokenDoc = await QuickBooksToken.findOne();
-    if (!tokenDoc) {
+    const token = await quickBooksService.getValidToken();
+    if (!token) {
       throw new Error("QuickBooks token not found");
     }
 
@@ -211,8 +211,8 @@ const syncWithQuickBooks = async (
       const qbCustomerId =
         await quickBooksService.createCustomer(
           user,
-          tokenDoc.realmId,
-          tokenDoc.accessToken
+          token?.realmId,
+          token?.accessToken
         );
 
       console.log("Saving QuickBooks ID to user...");

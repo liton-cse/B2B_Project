@@ -77,36 +77,40 @@ export class QuickBooksConfig {
     }
   }
 
-  public async refreshAccessToken(refreshToken: string): Promise<any> {
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
+async refreshAccessToken(refreshToken: string) {
+  try {
+    const url = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
 
-    const tokenUrl = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+    const credentials = Buffer.from(
+      `${this.clientId}:${this.clientSecret}`
+    ).toString('base64');
 
-    try {
-      const response = await axios.post(tokenUrl,
-        qs.stringify({
-          grant_type: 'refresh_token',
-          refresh_token: this.refreshToken
-        }),
-        {
-          headers: {
-            'Authorization': `Basic ${auth}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
+    const response = await axios.post(
+      url,
+      new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      }),
+      {
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json',
+        },
+      }
+    );
 
-      this.accessToken = response.data.access_token;
-      this.refreshToken = response.data.refresh_token;
-      this.tokenExpiresAt = new Date(Date.now() + response.data.expires_in * 1000);
-    } catch (error) {
-      console.error('Error refreshing QuickBooks access token:', error);
-      throw error;
-    }
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      '❌ Refresh token error:',
+      error?.response?.data || error
+    );
+
+    throw new Error('QuickBooks token refresh failed');
   }
+}
+
 
   getBaseUrl(realmId: string): string {
     if (!realmId) throw new Error('No realm ID available');

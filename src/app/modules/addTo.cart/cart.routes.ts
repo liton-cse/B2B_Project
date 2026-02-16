@@ -9,14 +9,35 @@ const router = Router();
  * Cart Routes (Protected)
  */
 
-router.get('/', auth(USER_ROLES.USER), CartController.getMyCart);
+router.get(
+  '/',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  CartController.getMyCart,
+);
 
-router.post('/add', auth(USER_ROLES.USER), CartController.addToCart);
+router.post(
+  '/add',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  CartController.addToCart,
+);
 
-router.patch('/update', auth(USER_ROLES.USER), CartController.updateCartItemQuantity);
+router.patch(
+  '/update',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  CartController.updateCartItemQuantity,
+);
 
-router.delete('/item', auth(USER_ROLES.USER), CartController.removeCartItem);
+router.delete(
+  '/item',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  CartController.removeCartItem,
+);
 
-router.delete('/clear', auth(USER_ROLES.USER), CartController.clearCart);
+router.delete(
+  '/clear',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  CartController.clearCart,
+);
 
 export const CartRoutes = router;
+ 

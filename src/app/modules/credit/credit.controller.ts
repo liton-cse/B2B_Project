@@ -9,7 +9,7 @@ const creditService = new CreditService();
 const assignCreditLimit = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { creditLimit, reason, expiryDate } = req.body;
-  const adminId = req.user._id;
+  const adminId = req.user.id;
 
   await creditService.assignCreditLimit(userId, creditLimit, adminId, reason, expiryDate);
 

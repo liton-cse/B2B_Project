@@ -101,7 +101,8 @@ export class OrderService {
         userId,
         order.totalAmount,
         order._id.toString(),
-        `Order placed - #${order.orderNumber}`
+        `Order placed - #${order.orderNumber}`,
+        session
       );
 
       await session.commitTransaction();
@@ -183,7 +184,7 @@ async getUserOrders(
 
 
   async getAllOrders(query: any): Promise<{ orders: IOrder[]; total: number }> {
-    const { page = 1, limit = 10, status, paymentStatus, startDate, endDate } = query;
+    const { page = 1, limit = 10, status, paymentStatus, startDate, endDate,search } = query;
     const skip = (page - 1) * limit;
 
     const filter: any = {};
@@ -194,6 +195,12 @@ async getUserOrders(
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
+    // if (search) {
+    //   filter.$or = [
+    //     { orderNumber: { $regex: search, $options: 'i' } },
+    //     { userId: { $regex: search, $options: 'i' } }
+    //   ];
+    // } 
 
     const orders = await Order.find(filter)
       .populate('userId', 'name email businessName')
