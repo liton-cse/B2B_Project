@@ -76,7 +76,7 @@ const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
 
 const cancelOrder = catchAsync(async (req: Request, res: Response) => {
   const { orderId } = req.params;
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   const result = await orderService.cancelOrder(orderId, userId);
 

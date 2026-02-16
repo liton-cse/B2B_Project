@@ -163,30 +163,27 @@ async updateOutstandingBalance(
     };
   }
 
-  async getUserCreditTransactions(
-    userId: string,
-    query: any
-  ): Promise<{ transactions: any[]; total: number }> {
-    const { page = 1, limit = 20, startDate, endDate } = query;
-    const skip = (page - 1) * limit;
+async getUserCreditTransactions(
+  userId: string,
+  query: { page?: number; limit?: number } = {}
+): Promise<{ transactions: any[]; total: number }> {
+  const { page = 1, limit = 10 } = query;
+  const skip = (page - 1) * limit;
 
-    const filter: any = { userId };
-    if (startDate || endDate) {
-      filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
-      if (endDate) filter.createdAt.$lte = new Date(endDate);
-    }
+  // Fetch transactions
+  const transactions = await CreditTransaction.find({ userId })
+    .populate('userId', 'name email')        // who the transaction belongs to
+    .populate('orderId', 'orderNumber totalAmount') // optional: link to order
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
-    const transactions = await CreditTransaction.find(filter)
-      .populate('orderId', 'orderNumber totalAmount')
-      .skip(skip)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
+  // Count total
+  const total = await CreditTransaction.countDocuments({ userId });
 
-    const total = await CreditTransaction.countDocuments(filter);
+  return { transactions, total };
+}
 
-    return { transactions, total };
-  }
 
   async getCreditUtilizationReport(): Promise<any> {
     const users = await User.find({
