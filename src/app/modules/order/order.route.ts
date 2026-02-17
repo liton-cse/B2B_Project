@@ -15,6 +15,7 @@ router.post('/:orderId/cancel', auth(USER_ROLES.USER), OrderController.cancelOrd
 // Admin routes
 router.get('/admin/all', auth(USER_ROLES.ADMIN), OrderController.getAllOrders);
 router.get('/admin/stats', auth(USER_ROLES.ADMIN), OrderController.getOrderStats);
+router.get('/admin/daily-product-orders', auth(USER_ROLES.ADMIN), OrderController.getDailyAllProductOrders);
 router.get('/admin/:orderId', auth(USER_ROLES.ADMIN), OrderController.getOrderById);
 router.patch('/admin/:orderId/status', auth(USER_ROLES.ADMIN), OrderController.updateOrderStatus);
 

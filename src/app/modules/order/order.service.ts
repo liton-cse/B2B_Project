@@ -5,9 +5,10 @@ import { CreditService } from '../credit/credit.service';
 import { IOrder, OrderStatus, PaymentStatus } from './order.interface';
 import mongoose from 'mongoose';
 import { ProductModel } from '../product.catelog/product.model';
-import { QuickBooksToken } from '../quickbook/quickbooksToken.model';
 import { emailTemplate } from '../../../shared/emailTemplate';
 import { emailHelper } from '../../../helpers/emailHelper';
+
+
 
 export class OrderService {
   private quickBooksService: QuickBooksService;
@@ -183,36 +184,113 @@ async getUserOrders(
 }
 
 
-  async getAllOrders(query: any): Promise<{ orders: IOrder[]; total: number }> {
-    const { page = 1, limit = 10, status, paymentStatus, startDate, endDate,search } = query;
-    const skip = (page - 1) * limit;
+async getAllOrders(query: any): Promise<{ orders: IOrder[]; total: number }> {
+  const { page = 1, limit = 10, status, paymentStatus, startDate, endDate, search } = query;
+  const skip = (page - 1) * limit;
 
-    const filter: any = {};
-    if (status) filter.status = status;
-    if (paymentStatus) filter.paymentStatus = paymentStatus;
-    if (startDate || endDate) {
-      filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
-      if (endDate) filter.createdAt.$lte = new Date(endDate);
-    }
-    // if (search) {
-    //   filter.$or = [
-    //     { orderNumber: { $regex: search, $options: 'i' } },
-    //     { userId: { $regex: search, $options: 'i' } }
-    //   ];
-    // } 
+  const filter: any = {};
 
-    const orders = await Order.find(filter)
-      .populate('userId', 'name email businessName')
-      .populate('items.productId', 'name sku')
-      .skip(skip)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
+  if (status) filter.status = status;
+  if (paymentStatus) filter.paymentStatus = paymentStatus;
 
-    const total = await Order.countDocuments(filter);
-
-    return { orders, total };
+  if (startDate || endDate) {
+    filter.createdAt = {};
+    if (startDate) filter.createdAt.$gte = new Date(startDate);
+    if (endDate) filter.createdAt.$lte = new Date(endDate);
   }
+
+  // ✅ SEARCH FIX
+  if (search) {
+    const users = await User.find({
+      name: { $regex: search, $options: "i" }
+    }).select("_id");
+
+    const userIds = users.map(u => u._id);
+
+    filter.$or = [
+      { orderNumber: { $regex: search, $options: "i" } },
+      { userId: { $in: userIds } }
+    ];
+  }
+
+  const orders = await Order.find(filter)
+    .populate("userId", "name email businessName")
+    .populate("items.productId", "name sku")
+    .skip(skip)
+    .limit(parseInt(limit))
+    .sort({ createdAt: -1 });
+
+  const total = await Order.countDocuments(filter);
+
+  return { orders, total };
+  }
+  
+
+async getDailyAllOrders(query: any) {
+  const { date, search } = query;
+
+  // ✅ Default = today
+  const selectedDate = date ? new Date(date) : new Date();
+
+  const startOfDay = new Date(selectedDate);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const nextDay = new Date(selectedDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  nextDay.setHours(0, 0, 0, 0);
+
+  const pipeline: any[] = [
+    {
+      $match: {
+        createdAt: {
+          $gte: startOfDay,
+          $lt: nextDay,
+        },
+      },
+    },
+
+    // explode items array
+    { $unwind: "$items" },
+
+    // join product collection
+    {
+      $lookup: {
+        from: "productandcatelogs",
+        localField: "items.productId",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+  ];
+
+  // ✅ Search by product name
+  if (search) {
+    pipeline.push({
+      $match: {
+        "product.productName": { $regex: search, $options: "i" },
+      },
+    });
+  }
+
+  // ✅ Group by product
+  pipeline.push({
+    $group: {
+      _id: "$product._id",
+      productName: { $first: "$product.productName" },
+      date: { $first: startOfDay },
+      totalOrders: { $sum: 1 },
+      totalQuantity: { $sum: "$items.quantity" },
+    },
+  });
+
+  // optional sorting
+  pipeline.push({ $sort: { totalQuantity: -1 } });
+
+  const result = await Order.aggregate(pipeline);
+
+  return result;
+}
 
   async getOrderById(orderId: string): Promise<IOrder | null> {
     const order = await Order.findById(orderId)

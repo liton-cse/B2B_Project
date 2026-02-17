@@ -48,6 +48,16 @@ const getAllOrders = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getDailyAllProductOrders = catchAsync(async (req: Request, res: Response) => {
+  const result = await orderService.getDailyAllOrders(req.query);
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'All Daily Product Orders retrieved successfully',
+    data: result,
+  });
+});
+
 const getOrderById = catchAsync(async (req: Request, res: Response) => {
   const { orderId } = req.params;
   const result = await orderService.getOrderById(orderId);
@@ -103,6 +113,7 @@ export const OrderController = {
   createOrder,
   getMyOrders,
   getAllOrders,
+  getDailyAllProductOrders,
   getOrderById,
   updateOrderStatus,
   cancelOrder,
