@@ -57,6 +57,7 @@ export interface IOrder extends Document {
   dueDate: Date;
   shippingAddress: IAddress;
   billingAddress?: IAddress;
+  deliveryDate?: Date;
   notes?: string;
 
   createdAt?: Date;

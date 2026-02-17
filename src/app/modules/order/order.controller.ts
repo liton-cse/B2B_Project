@@ -32,6 +32,18 @@ const getMyOrders = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMyOrdersForAdmin = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const result = await orderService.getUserOrders(userId, req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Orders retrieved successfully',
+    data: result.orders,
+  });
+});
+
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
   const result = await orderService.getAllOrders(req.query);
 
@@ -114,6 +126,7 @@ export const OrderController = {
   getMyOrders,
   getAllOrders,
   getDailyAllProductOrders,
+  getMyOrdersForAdmin,
   getOrderById,
   updateOrderStatus,
   cancelOrder,

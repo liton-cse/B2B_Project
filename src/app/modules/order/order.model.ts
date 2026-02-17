@@ -58,6 +58,7 @@ const orderSchema = new Schema<IOrder>(
     shippingAddress: { type: addressSchema, required: true },
     billingAddress: { type: addressSchema },
     notes: { type: String },
+    deliveryDate: { type: Date },
   },
   { timestamps: true }
 );

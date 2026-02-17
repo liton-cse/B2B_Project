@@ -228,18 +228,6 @@ export class QuickBooksService {
     try {
       const url = `${this.qbConfig.getBaseUrl(realmId)}/invoice`;
       const headers = await this.qbConfig.getHeaders(realmId, accessToken);
-
-      const lineItems = order.items.map(item => ({
-        Amount: item.totalPrice,
-        DetailType: 'SalesItemLineDetail',
-        SalesItemLineDetail: {
-          ItemRef: { name: item.name, value: item.sku },
-          UnitPrice: item.unitPrice,
-          Qty: item.quantity,
-        },
-        Description: item.name,
-      }));
-
       const invoiceData = {
         CustomerRef: {
           value: user.quickbooksId
