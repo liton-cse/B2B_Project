@@ -92,9 +92,6 @@ const invoicePaymentLinkEmail = (values: IInvoicePaymentLinkEmail) => {
       <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
         Your invoice <strong>${values.invoiceNumber}</strong> is ready for payment.
       </p>
-      <div style="background-color: #004F3B; width: 120px; padding: 12px; text-align: center; border-radius: 8px; color: #fff; font-size: 24px; letter-spacing: 2px; margin: 20px auto;">
-        ${values.orderNumber}
-      </div>
       <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
         Please click the button below to proceed with payment:
       </p>

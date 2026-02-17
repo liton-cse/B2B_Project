@@ -113,7 +113,7 @@ export class QuickBooksService {
       // Optional fields
 
       if (user.businessType) {
-        customerData.Title = user.businessType;
+        customerData.Title = user.businessType?.slice(0, 16); // QuickBooks Title max length is 50 chars
       }
 
       if (user.contact) {
