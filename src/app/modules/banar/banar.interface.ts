@@ -1,15 +1,7 @@
-/**
- * Banner interface
- * Single banner configuration for the system
- */
-export interface webBanner{
-  image: string;
-}
-
-export interface mobileBanner{
-  image: string;
-} 
+// src/modules/banner/banner.interface.ts
 export interface IBanner {
-  webBanners?: webBanner[];
-  mobileBanners?: mobileBanner[];
+  webBanners?: { image: string,_id?: string; }[];
+  mobileBanners?: { image: string,_id?: string; }[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }

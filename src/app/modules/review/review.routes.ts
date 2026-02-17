@@ -23,7 +23,7 @@ router.get(
 
 router.get(
   '/features/list',
-  auth(USER_ROLES.USER),
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
   reviewController.getProductFeatureList
 );  
 

@@ -1,27 +1,26 @@
+// src/modules/banner/banner.route.ts
 import { Router } from 'express';
-import { USER_ROLES } from '../../../enums/user';
-import auth from '../../middlewares/auth';
 import {
-  getBannerController,
   createAndUpdateBannerController,
+  getBannerController,
+  deleteBannerImageByIndexController,
 } from './banar.controller';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 
+
 const router = Router();
 
-// Get banner (ADMIN + USER)
-router.get(
-  '/',
-  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
-  getBannerController
-);
-
-// Create / Update banner (ADMIN only)
+// Upload 6 web + 4 mobile banners
 router.post(
-  '/create-update',
-  auth(USER_ROLES.ADMIN),
+  '/',
   fileUploadHandler(),
   createAndUpdateBannerController
 );
 
-export const BannerRoutes = router;
+// Get banners
+router.get('/', getBannerController);
+
+// Delete specific banner image by type/index
+router.delete('/:type/:banarId', deleteBannerImageByIndexController);
+
+export const BannerRouter = router;

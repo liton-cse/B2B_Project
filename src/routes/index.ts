@@ -2,7 +2,7 @@ import express from 'express';
 import { AuthRoutes } from '../app/modules/auth/auth.route';
 import { UserRoutes } from '../app/modules/user/user.route';
 import { ProductAndcatelogRoutes } from '../app/modules/product.catelog/product.route';
-import { BannerRoutes } from '../app/modules/banar/banar.route';
+
 import { revieweRouter } from '../app/modules/review/review.routes';
 import { FavouriteRoutes } from '../app/modules/favourite/favourite.routes';
 import { CustomerTypeRoutes } from '../app/modules/customer.type/customerr.type.routes';
@@ -12,6 +12,7 @@ import { FeatureProductRoutes } from '../app/modules/feature.product/feature.rou
 import { QuickBooksRoutes } from '../app/modules/quickbook/quickbook.routes';
 import { OrderRoutes } from '../app/modules/order/order.route';
 import { CreditRoutes } from '../app/modules/credit/credit.routes';
+import { BannerRouter } from '../app/modules/banar/banar.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -37,7 +38,7 @@ const apiRoutes = [
   },
   {
     path: '/banner',
-    route: BannerRoutes,
+    route: BannerRouter,
   },
   {
     path: '/favourite',
