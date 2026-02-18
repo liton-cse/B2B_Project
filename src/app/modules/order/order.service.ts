@@ -214,7 +214,7 @@ async getAllOrders(query: any): Promise<{ orders: IOrder[]; total: number }> {
   }
 
   const orders = await Order.find(filter)
-    .populate("userId", "name email businessName")
+    .populate("userId", "name email businessName contact")
     .populate("items.productId", "name sku")
     .skip(skip)
     .limit(parseInt(limit))
